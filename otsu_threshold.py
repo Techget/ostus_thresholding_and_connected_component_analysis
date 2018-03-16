@@ -57,6 +57,9 @@ for t in range(0, 256):
 		threshold = t
 		var_max = sigma
 
+if args.threshold:
+	print(threshold)
+
 for i in range(0, width):
 	for j in range(0, height):
 		if img[i][j] > threshold:
