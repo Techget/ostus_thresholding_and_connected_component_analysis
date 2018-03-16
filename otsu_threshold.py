@@ -68,7 +68,6 @@ for i in range(0, width):
 			output_image[i][j] = 0
 
 output_image = np.array(output_image)
-
 cv2.imwrite(args.output, output_image)
 
 # img_output = cv2.imread(args.output, 0)
