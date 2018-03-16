@@ -23,7 +23,6 @@ def union(parent,x,y):
 		parent[y_set] = x_set
 	# if x_set == y_set means they are in the same subset
 
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--input')
 parser.add_argument('--size')
@@ -38,12 +37,12 @@ side_length = 10
 
 ######################################### threshold the image
 ####### filter, preprocess
-input_img = cv2.GaussianBlur(input_img,(5,5),0) 
-# kernel = np.ones((5,5),np.uint8)
+input_img = cv2.GaussianBlur(input_img,(5,5),0)
+kernel = np.ones((5,5),np.uint8)
 # input_img = cv2.erode(input_img, kernel, iterations = 1)
 # input_img = cv2.dilate(input_img,kernel,iterations = 1)
 # input_img = cv2.morphologyEx(input_img, cv2.MORPH_OPEN, kernel)
-# input_img = cv2.morphologyEx(input_img, cv2.MORPH_CLOSE, kernel)
+input_img = cv2.morphologyEx(input_img, cv2.MORPH_CLOSE, kernel)
 # input_img = cv2.morphologyEx(input_img, cv2.MORPH_TOPHAT, kernel)
 
 ####### thresholding
@@ -83,17 +82,21 @@ for x in range(0, width):
 	for y in range(0, height):
 		if input_img[x][y] == BACKGROUND:
 			pass
-		
-		if y > 0 and input_img[x][y] == input_img[x][y-1] and x > 0 and input_img[x][y] == input_img[x-1][y]:
-			if labels[x][y-1] != labels[x-1][y]:
-				labels[x][y] = min(labels[x][y-1], labels[x-1][y])
-				union(parent, labels[x][y-1], labels[x-1][y])
-			else:
-				labels[x][y] = labels[x][y-1]
-		elif y > 0 and input_img[x][y] == input_img[x][y-1]:
-			labels[x][y] = labels[x][y-1]
-		elif x > 0 and input_img[x][y] == input_img[x-1][y]:
+		elif x > 0 and input_img[x-1][y] == input_img[x][y]:
 			labels[x][y] = labels[x-1][y]
+		elif y + 1 < height and x > 0 and input_img[x][y] == input_img[x-1][y+1]:
+			c = labels[x-1][y+1]
+			labels[x][y] = c
+			if y > 0 and input_img[x-1][y-1] == input_img[x][y]:
+				a = labels[x-1][y-1]
+				union(parent, a, c)
+			elif y > 0 and input_img[x][y-1] == input_img[x][y]:
+				d = labels[x][y-1]
+				union(parent, c, d)
+		elif y > 0 and x > 0 and input_img[x-1][y-1] == input_img[x][y]:
+			labels[x][y] = labels[x-1][y-1]
+		elif y > 0 and input_img[x][y-1] == input_img[x][y]:
+			labels[x][y] = labels[x][y-1]
 		else:
 			labels[x][y] = next_label
 			parent.append(-1)
