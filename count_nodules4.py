@@ -138,9 +138,9 @@ if args.optional_output:
 	output_image = np.array(output_image)
 	cv2.imwrite(args.optional_output, output_image)
 
-	img_output = cv2.imread(args.optional_output, 0)
-	cv2.imshow('output', img_output)
-	cv2.waitKey()
+	# img_output = cv2.imread(args.optional_output, 0)
+	# cv2.imshow('output', img_output)
+	# cv2.waitKey()
 
 
 

@@ -122,7 +122,7 @@ if __name__ == "__main__":
 	# cv2.imshow('output', img_output)
 	# cv2.waitKey()
 
-	# validation
+	# # validation
 	# ret = cv2.adaptiveThreshold(input_img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, 
 	#    cv2.THRESH_BINARY, 11, 2);
 	# cv2.imshow('q2_example', ret)

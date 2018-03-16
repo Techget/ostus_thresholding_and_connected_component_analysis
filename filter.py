@@ -58,6 +58,13 @@ if __name__ == "__main__":
 	output_img = np.array(output_img)
 	cv2.imwrite(args.output, output_img)
 
-	img_output = cv2.imread(args.output, 0)
-	cv2.imshow('output', img_output)
-	cv2.waitKey()
+	# img_output = cv2.imread(args.output, 0)
+	# cv2.imshow('output', img_output)
+	# cv2.waitKey()
+
+
+	# # # validation
+	# ret = cv2.adaptiveThreshold(input_img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, 
+	#    cv2.THRESH_BINARY, 11, 2);
+	# cv2.imshow('q2_example', ret)
+	# cv2.waitKey()
