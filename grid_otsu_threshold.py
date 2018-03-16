@@ -35,7 +35,7 @@ def cal_thresholds(img, thresholds_record, i, j, w, h, side_length):
 		if x > max2:
 			max2 = x
 
-	if not(max1 > side_length/2 and max2 > side_length/2) and (thresholds_record_x - 1 > 0 or thresholds_record_y - 1 > 0):
+	if not(max1 > side_length/2 and max2 > side_length/3) and (thresholds_record_x - 1 > 0 or thresholds_record_y - 1 > 0):
 		mean_threshold = 0
 		if thresholds_record_x - 1 > 0 and thresholds_record_y -1 > 0:
 			total_neighbor_threshold = thresholds_record[thresholds_record_x-1][thresholds_record_y-1]
@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
 	input_img = cv2.imread(args.input, 0)
 	width, height = input_img.shape
-	side_length = int(args.grid_size)
+	side_length = int(math.sqrt(float(args.grid_size)))
 	output_img = [[0 for x in range(0,height)] for x in range(0,width)]
 
 	height_ceil = int(math.ceil(float(height)/float(side_length)))
