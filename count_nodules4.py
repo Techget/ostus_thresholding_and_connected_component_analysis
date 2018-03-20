@@ -30,7 +30,17 @@ parser.add_argument('--size')
 parser.add_argument("--optional_output", action="store")
 args = parser.parse_args()
 
-input_img = cv2.imread(args.input, 0)
+# input_img = cv2.imread(args.input, 0)
+input_img = np.array([[255, 255, 255, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [255, 255, 255, 0, 0, 0, 0, 255, 255, 255, 0, 0, 0, 0, 255, 255, 0, 0, 0],
+                    [255, 255, 255, 0, 0, 0, 0, 0, 255, 255, 0, 0, 0, 0, 255, 255, 0, 0, 0],
+                    [255, 255, 255, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 255, 255, 0, 0, 0],
+                    [255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 0, 0, 0],
+                    [255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 0, 0, 0],
+                    [255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0],
+                    [255, 255, 255, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0],
+                    ])
+
 width, height = input_img.shape
 area = int(args.size)
 BACKGROUND = 255
@@ -38,7 +48,7 @@ side_length = 10
 
 ######################################### threshold the image
 ####### filter, preprocess
-input_img = cv2.GaussianBlur(input_img,(5,5),0) 
+# input_img = cv2.GaussianBlur(input_img,(5,5),0) 
 # kernel = np.ones((5,5),np.uint8)
 # input_img = cv2.erode(input_img, kernel, iterations = 1)
 # input_img = cv2.dilate(input_img,kernel,iterations = 1)
@@ -67,7 +77,7 @@ while i < width:
 		j += side_length
 	i += side_length
 
-# generate output image
+# generate thresholded input image
 for i in range(0, width):
 	for j in range(0, height):
 		if input_img[i][j] > thresholds[i//side_length][j//side_length]:
@@ -82,7 +92,7 @@ labels = [[0 for x in range(0, height)] for x in range(0, width)]
 for x in range(0, width):
 	for y in range(0, height):
 		if input_img[x][y] == BACKGROUND:
-			pass
+			continue
 		
 		if y > 0 and input_img[x][y] == input_img[x][y-1] and x > 0 and input_img[x][y] == input_img[x-1][y]:
 			if labels[x][y-1] != labels[x-1][y]:
@@ -108,6 +118,8 @@ for x in range(0, width):
 area_label_counter = {}
 for x in range(0, width):
 	for y in range(0, height):
+		if labels[x][y] == 0:
+			continue
 		if labels[x][y] in area_label_counter:
 			area_label_counter[labels[x][y]] += 1
 		else:
@@ -118,29 +130,39 @@ for key in area_label_counter:
 	if area_label_counter[key] > area:
 		area_counter += 1
 print(area_counter)
+print(labels)
 
 if args.optional_output: 
-	output_image = [[0 for x in range(0,height)] for x in range(0,width)]
+	# output_image = [[0 for x in range(0,height)] for x in range(0,width)]
+	# output_image = cv2.copy(input_img)
+	output_image = np.zeros((width, height,3))
+	# output_image = cv2.imread(args.input)
+	# cv2.imshow('fake output', output_image)
+	# print(output_image.shape)
 	label_colors = {}
 	used_color = []
 	for x in range(0, width):
 		for y in range(0, height):
 			if input_img[x][y] != BACKGROUND:
 				if labels[x][y] not in label_colors:
-					color_temp = random.randint(0,BACKGROUND)
-					while color_temp in used_color:
-						color_temp = random.randint(0,BACKGROUND)
-					label_colors[labels[x][y]] = color_temp
+					# [random.randint(0,BACKGROUND), random.randint(0,BACKGROUND), random.randint(0,BACKGROUND)]
+					label_colors[labels[x][y]] = [255, 255, 0]
+					# label_colors[labels[x][y]] = random.randint(0,BACKGROUND)
 				output_image[x][y] = label_colors[labels[x][y]]
 			else:
-				output_image[x][y] = BACKGROUND
+				output_image[x][y] = [BACKGROUND, BACKGROUND, BACKGROUND]
 
-	output_image = np.array(output_image)
+	# output_image = np.array(output_image)
+	print(output_image.shape)
+	print(output_image)
+	# input_img=cv2.cvtColor(input_img,cv2.COLOR_GRAY2RGB)
+	# cv2.imshow('input',input_img)
+	# output_image = cv2.cvtColor(output_image,cv2.COLOR_GRAY2RGB)
 	cv2.imwrite(args.optional_output, output_image)
 
-	# img_output = cv2.imread(args.optional_output, 0)
-	# cv2.imshow('output', img_output)
-	# cv2.waitKey()
+	img_output = cv2.imread(args.optional_output, 0)
+	cv2.imshow('output', img_output)
+	cv2.waitKey()
 
 
 

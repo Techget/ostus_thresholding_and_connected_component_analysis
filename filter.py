@@ -18,6 +18,7 @@ if __name__ == "__main__":
 
 	####### filter, preprocess
 	input_img = cv2.GaussianBlur(input_img,(5,5),0) 
+	# input_img = cv2.meanBlur(input_img,(5,5),0) 
 	kernel = np.ones((5,5),np.uint8)
 	# input_img = cv2.erode(input_img, kernel, iterations = 1)
 	# input_img = cv2.dilate(input_img,kernel,iterations = 1)
