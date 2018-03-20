@@ -35,47 +35,38 @@ if __name__ == "__main__":
 	width, height = input_img.shape
 	area = int(args.size)
 	BACKGROUND = 255
-	side_length = 10
+	side_length = min(width//10, height//10)
 
 	######################################### threshold the image
-	threshold = 0
-	var_max = 0
-	sum_num = 0
-	sumB = 0
-	q1 = 0
-	q2 = 0
-	mu1 = 0
-	mu2 = 0
-	histogram = [0] * 256
-	total_pixels = input_img.size
-	for il in input_img:
-		for j in il:
-			histogram[j] += 1
+	input_img = cv2.GaussianBlur(input_img,(5,5),0) 
+	kernel = np.ones((5,5),np.uint8)
+	input_img = cv2.morphologyEx(input_img, cv2.MORPH_OPEN, kernel)
 
-	sum_num = 0
-	for t in range(0, 256):
-		sum_num += t * histogram[t]
+	####### thresholding
+	height_ceil = int(math.ceil(float(height)/float(side_length)))
+	width_ceil = int(math.ceil(float(width)/float(side_length)))
 
-	for t in range(0, 256):
-		q1 += histogram[t]
-		if q1 == 0:
-			continue
-		q2 = total_pixels - q1
-		if q2 == 0:
-			break
+	thresholds = [[0 for x in range(0, height_ceil)] for x in range(0, width_ceil)]
 
-		sumB += t * histogram[t]
-		mu1 = float(sumB / float(q1))
-		mu2 = float((sum_num - sumB) / float(q2))
-		sigma = float(q1*q2*(float(mu1 - mu2)**2))
-
-		if sigma > var_max:
-			threshold = t
-			var_max = sigma
+	i = 0
+	j = 0
+	w = side_length
+	h = side_length
+	while i < width:
+		j = 0
+		h = side_length
+		if i + side_length > width:
+			w = width - i
+		while j < height:
+			if j + side_length > height:
+				h = height - j
+			grid_otsu_threshold.cal_thresholds(input_img, thresholds, i, j, w, h, side_length)
+			j += side_length
+		i += side_length
 
 	for i in range(0, width):
 		for j in range(0, height):
-			if input_img[i][j] > threshold:
+			if input_img[i][j] > thresholds[i//side_length][j//side_length]:
 				input_img[i][j] = 255
 			else:
 				input_img[i][j] = 0

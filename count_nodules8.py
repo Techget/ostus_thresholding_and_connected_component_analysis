@@ -23,120 +23,115 @@ def union(parent,x,y):
 		parent[y_set] = x_set
 	# if x_set == y_set means they are in the same subset
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--input')
-parser.add_argument('--size')
-parser.add_argument("--optional_output", action="store")
-args = parser.parse_args()
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--input')
+	parser.add_argument('--size')
+	parser.add_argument("--optional_output", action="store")
+	args = parser.parse_args()
 
-input_img = cv2.imread(args.input, 0)
-width, height = input_img.shape
-area = int(args.size)
-BACKGROUND = 255
-side_length = min(width//10, height//10)
+	input_img = cv2.imread(args.input, 0)
+	width, height = input_img.shape
+	area = int(args.size)
+	BACKGROUND = 255
+	side_length = min(width//10, height//10)
 
-######################################### threshold the image
-####### filter, preprocess
-input_img = cv2.GaussianBlur(input_img,(5,5),0) 
-kernel = np.ones((5,5),np.uint8)
-input_img = cv2.morphologyEx(input_img, cv2.MORPH_OPEN, kernel)
+	######################################### threshold the image
+	####### filter, preprocess
+	input_img = cv2.GaussianBlur(input_img,(5,5),0) 
+	kernel = np.ones((5,5),np.uint8)
+	input_img = cv2.morphologyEx(input_img, cv2.MORPH_OPEN, kernel)
 
-####### thresholding
-height_ceil = int(math.ceil(float(height)/float(side_length)))
-width_ceil = int(math.ceil(float(width)/float(side_length)))
+	####### thresholding
+	height_ceil = int(math.ceil(float(height)/float(side_length)))
+	width_ceil = int(math.ceil(float(width)/float(side_length)))
 
-thresholds = [[0 for x in range(0, height_ceil)] for x in range(0, width_ceil)]
+	thresholds = [[0 for x in range(0, height_ceil)] for x in range(0, width_ceil)]
 
-i = 0
-j = 0
-w = side_length
-h = side_length
-while i < width:
+	i = 0
 	j = 0
+	w = side_length
 	h = side_length
-	if i + side_length > width:
-		w = width - i
-	while j < height:
-		if j + side_length > height:
-			h = height - j
-		grid_otsu_threshold.cal_thresholds(input_img, thresholds, i, j, w, h, side_length)
-		j += side_length
-	i += side_length
+	while i < width:
+		j = 0
+		h = side_length
+		if i + side_length > width:
+			w = width - i
+		while j < height:
+			if j + side_length > height:
+				h = height - j
+			grid_otsu_threshold.cal_thresholds(input_img, thresholds, i, j, w, h, side_length)
+			j += side_length
+		i += side_length
 
-for i in range(0, width):
-	for j in range(0, height):
-		if input_img[i][j] > thresholds[i//side_length][j//side_length]:
-			input_img[i][j] = 255
-		else:
-			input_img[i][j] = 0
+	for i in range(0, width):
+		for j in range(0, height):
+			if input_img[i][j] > thresholds[i//side_length][j//side_length]:
+				input_img[i][j] = 255
+			else:
+				input_img[i][j] = 0
 
-################## calculate connected components
-parent = [-1] # it is used to record label, label is corresponding to the key of parent list
-next_label = 1
-labels = [[0 for x in range(0, height)] for x in range(0, width)]
-for x in range(0, width):
-	for y in range(0, height):
-		if input_img[x][y] == BACKGROUND:
-			pass
-		elif x > 0 and input_img[x-1][y] == input_img[x][y]:
-			labels[x][y] = labels[x-1][y]
-		elif y + 1 < height and x > 0 and input_img[x][y] == input_img[x-1][y+1]:
-			c = labels[x-1][y+1]
-			labels[x][y] = c
-			if y > 0 and input_img[x-1][y-1] == input_img[x][y]:
-				a = labels[x-1][y-1]
-				union(parent, a, c)
-			elif y > 0 and input_img[x][y-1] == input_img[x][y]:
-				d = labels[x][y-1]
-				union(parent, c, d)
-		elif y > 0 and x > 0 and input_img[x-1][y-1] == input_img[x][y]:
-			labels[x][y] = labels[x-1][y-1]
-		elif y > 0 and input_img[x][y-1] == input_img[x][y]:
-			labels[x][y] = labels[x][y-1]
-		else:
-			labels[x][y] = next_label
-			parent.append(-1)
-			next_label += 1
-			assert(len(parent) == next_label)
-
-for x in range(0, width):
-	for y in range(0, height):
-		if input_img[x][y] != BACKGROUND:
-			labels[x][y] = find_parent(parent, labels[x][y])
-
-area_label_counter = {}
-for x in range(0, width):
-	for y in range(0, height):
-		if labels[x][y] in area_label_counter:
-			area_label_counter[labels[x][y]] += 1
-		else:
-			area_label_counter[labels[x][y]] = 1
-
-area_counter = 0
-for key in area_label_counter:
-	if area_label_counter[key] > area:
-		area_counter += 1
-print(area_counter)
-
-if args.optional_output: 
-	# output_image = [[0 for x in range(0,height)] for x in range(0,width)]
-	# output_image = cv2.copy(input_img)
-	output_image = np.zeros((width, height,3))
-	label_colors = {}
-	used_color = []
+	################## calculate connected components
+	parent = [-1] # it is used to record label, label is corresponding to the key of parent list
+	next_label = 1
+	labels = [[0 for x in range(0, height)] for x in range(0, width)]
 	for x in range(0, width):
 		for y in range(0, height):
-			if labels[x][y] != 0:
-				if labels[x][y] not in label_colors:
-					label_colors[labels[x][y]] = [random.randint(0,BACKGROUND), random.randint(0,BACKGROUND), random.randint(0,BACKGROUND)]
-				output_image[x][y] = label_colors[labels[x][y]]
+			if input_img[x][y] == BACKGROUND:
+				pass
+			elif x > 0 and input_img[x-1][y] == input_img[x][y]:
+				labels[x][y] = labels[x-1][y]
+			elif y + 1 < height and x > 0 and input_img[x][y] == input_img[x-1][y+1]:
+				c = labels[x-1][y+1]
+				labels[x][y] = c
+				if y > 0 and input_img[x-1][y-1] == input_img[x][y]:
+					a = labels[x-1][y-1]
+					union(parent, a, c)
+				elif y > 0 and input_img[x][y-1] == input_img[x][y]:
+					d = labels[x][y-1]
+					union(parent, c, d)
+			elif y > 0 and x > 0 and input_img[x-1][y-1] == input_img[x][y]:
+				labels[x][y] = labels[x-1][y-1]
+			elif y > 0 and input_img[x][y-1] == input_img[x][y]:
+				labels[x][y] = labels[x][y-1]
 			else:
-				output_image[x][y] = [BACKGROUND, BACKGROUND, BACKGROUND]
-	cv2.imwrite(args.optional_output, output_image)
+				labels[x][y] = next_label
+				parent.append(-1)
+				next_label += 1
+				assert(len(parent) == next_label)
 
-	# img_output = cv2.imread(args.optional_output, 0)
-	# cv2.imshow('output', img_output)
-	# cv2.waitKey()
+	for x in range(0, width):
+		for y in range(0, height):
+			if input_img[x][y] != BACKGROUND:
+				labels[x][y] = find_parent(parent, labels[x][y])
+
+	area_label_counter = {}
+	for x in range(0, width):
+		for y in range(0, height):
+			if labels[x][y] in area_label_counter:
+				area_label_counter[labels[x][y]] += 1
+			else:
+				area_label_counter[labels[x][y]] = 1
+
+	area_counter = 0
+	for key in area_label_counter:
+		if area_label_counter[key] > area:
+			area_counter += 1
+	print(area_counter)
+
+	if args.optional_output: 
+		output_image = np.zeros((width, height,3))
+		label_colors = {}
+		used_color = []
+		for x in range(0, width):
+			for y in range(0, height):
+				if labels[x][y] != 0:
+					if labels[x][y] not in label_colors:
+						label_colors[labels[x][y]] = [random.randint(0,BACKGROUND), random.randint(0,BACKGROUND), random.randint(0,BACKGROUND)]
+					output_image[x][y] = label_colors[labels[x][y]]
+				else:
+					output_image[x][y] = [BACKGROUND, BACKGROUND, BACKGROUND]
+		cv2.imwrite(args.optional_output, output_image)
 
 
 
