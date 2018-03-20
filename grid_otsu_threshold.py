@@ -83,7 +83,8 @@ if __name__ == "__main__":
 
 	input_img = cv2.imread(args.input, 0)
 	width, height = input_img.shape
-	side_length = int(math.sqrt(float(args.grid_size)))
+	n_splits = int(math.sqrt(float(args.grid_size)))
+	side_length = min(width//n_splits, height//n_splits)
 	output_img = [[0 for x in range(0,height)] for x in range(0,width)]
 
 	height_ceil = int(math.ceil(float(height)/float(side_length)))

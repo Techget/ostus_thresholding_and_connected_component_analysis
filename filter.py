@@ -7,18 +7,18 @@ import grid_otsu_threshold
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--input')
-	parser.add_argument("grid_size")
+	# parser.add_argument("grid_size")
 	parser.add_argument('--output')
 	args = parser.parse_args()
 
 	input_img = cv2.imread(args.input, 0)
 	width, height = input_img.shape
-	side_length = int(math.sqrt(float(args.grid_size)))
+	# side_length = int(math.sqrt(float(args.grid_size)))
+	side_length = min(width//10, height//10)
 	output_img = [[0 for x in range(0,height)] for x in range(0,width)]
 
 	####### filter, preprocess
 	input_img = cv2.GaussianBlur(input_img,(5,5),0) 
-	# input_img = cv2.meanBlur(input_img,(5,5),0) 
 	kernel = np.ones((5,5),np.uint8)
 	# input_img = cv2.erode(input_img, kernel, iterations = 1)
 	# input_img = cv2.dilate(input_img,kernel,iterations = 1)
