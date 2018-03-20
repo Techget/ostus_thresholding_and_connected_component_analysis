@@ -5,11 +5,11 @@ import random
 import grid_otsu_threshold
 import math
 
-def find_parent(parent, i):
-	temp = i
-	while parent[temp] != -1:
-		temp = parent[temp]
-	return temp
+def find_parent(parent,i):
+    if parent[i] == -1:
+        return i
+    if parent[i]!= -1:
+         return find_parent(parent,parent[i])
  
 def union(parent,x,y):
 	if x == y:
@@ -17,9 +17,9 @@ def union(parent,x,y):
 	x_set = find_parent(parent, x)
 	y_set = find_parent(parent, y)
 
-	if x_set < y_set:
+	if x_set > y_set:
 		parent[x_set] = y_set
-	elif y_set > x_set:
+	elif x_set < y_set:
 		parent[y_set] = x_set
 	# if x_set == y_set means they are in the same subset
 
@@ -33,21 +33,18 @@ input_img = cv2.imread(args.input, 0)
 width, height = input_img.shape
 area = int(args.size)
 BACKGROUND = 255
-side_length = 10
+side_length = min(width//10, height//10)
 
 ######################################### threshold the image
 ####### filter, preprocess
-input_img = cv2.GaussianBlur(input_img,(5,5),0)
+input_img = cv2.GaussianBlur(input_img,(5,5),0) 
 kernel = np.ones((5,5),np.uint8)
-# input_img = cv2.erode(input_img, kernel, iterations = 1)
-# input_img = cv2.dilate(input_img,kernel,iterations = 1)
-# input_img = cv2.morphologyEx(input_img, cv2.MORPH_OPEN, kernel)
-input_img = cv2.morphologyEx(input_img, cv2.MORPH_CLOSE, kernel)
-# input_img = cv2.morphologyEx(input_img, cv2.MORPH_TOPHAT, kernel)
+input_img = cv2.morphologyEx(input_img, cv2.MORPH_OPEN, kernel)
 
 ####### thresholding
 height_ceil = int(math.ceil(float(height)/float(side_length)))
 width_ceil = int(math.ceil(float(width)/float(side_length)))
+
 thresholds = [[0 for x in range(0, height_ceil)] for x in range(0, width_ceil)]
 
 i = 0
@@ -66,7 +63,6 @@ while i < width:
 		j += side_length
 	i += side_length
 
-# generate output image
 for i in range(0, width):
 	for j in range(0, height):
 		if input_img[i][j] > thresholds[i//side_length][j//side_length]:
@@ -123,22 +119,19 @@ for key in area_label_counter:
 print(area_counter)
 
 if args.optional_output: 
-	output_image = [[0 for x in range(0,height)] for x in range(0,width)]
+	# output_image = [[0 for x in range(0,height)] for x in range(0,width)]
+	# output_image = cv2.copy(input_img)
+	output_image = np.zeros((width, height,3))
 	label_colors = {}
 	used_color = []
 	for x in range(0, width):
 		for y in range(0, height):
-			if input_img[x][y] != BACKGROUND:
+			if labels[x][y] != 0:
 				if labels[x][y] not in label_colors:
-					color_temp = random.randint(0,BACKGROUND)
-					while color_temp in used_color:
-						color_temp = random.randint(0,BACKGROUND)
-					label_colors[labels[x][y]] = color_temp
+					label_colors[labels[x][y]] = [random.randint(0,BACKGROUND), random.randint(0,BACKGROUND), random.randint(0,BACKGROUND)]
 				output_image[x][y] = label_colors[labels[x][y]]
 			else:
-				output_image[x][y] = BACKGROUND
-
-	output_image = np.array(output_image)
+				output_image[x][y] = [BACKGROUND, BACKGROUND, BACKGROUND]
 	cv2.imwrite(args.optional_output, output_image)
 
 	# img_output = cv2.imread(args.optional_output, 0)

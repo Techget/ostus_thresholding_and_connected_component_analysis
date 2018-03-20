@@ -103,7 +103,8 @@ if __name__ == "__main__":
 				next_label += 1
 				labels[x][y] = next_label
 				parent.append(-1)
-
+				
+	# relabel, replace label value with its parent's label value
 	for x in range(0, width):
 		for y in range(0, height):
 			if input_img[x][y] != BACKGROUND:
