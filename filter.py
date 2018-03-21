@@ -7,13 +7,11 @@ import grid_otsu_threshold
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--input')
-	# parser.add_argument("grid_size")
 	parser.add_argument('--output')
 	args = parser.parse_args()
 
 	input_img = cv2.imread(args.input, 0)
 	width, height = input_img.shape
-	# side_length = int(math.sqrt(float(args.grid_size)))
 	side_length = min(width//10, height//10)
 	output_img = [[0 for x in range(0,height)] for x in range(0,width)]
 
@@ -58,14 +56,3 @@ if __name__ == "__main__":
 
 	output_img = np.array(output_img)
 	cv2.imwrite(args.output, output_img)
-
-	# img_output = cv2.imread(args.output, 0)
-	# cv2.imshow('output', img_output)
-	# cv2.waitKey()
-
-
-	# # # validation
-	# ret = cv2.adaptiveThreshold(input_img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, 
-	#    cv2.THRESH_BINARY, 11, 2);
-	# cv2.imshow('q2_example', ret)
-	# cv2.waitKey()

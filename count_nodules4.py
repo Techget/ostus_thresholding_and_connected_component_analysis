@@ -4,7 +4,6 @@ import numpy as np
 import random
 import grid_otsu_threshold
 import math
-from pprint import pprint
 
 def find_parent(parent,i):
     if parent[i] == -1:
@@ -116,12 +115,8 @@ if __name__ == "__main__":
 		if area_label_counter[key] > area:
 			area_counter += 1
 	print(area_counter)
-	# pprint(labels)
-	# print(parent)
 
 	if args.optional_output: 
-		# output_image = [[0 for x in range(0,height)] for x in range(0,width)]
-		# output_image = cv2.copy(input_img)
 		output_image = np.zeros((width, height,3))
 		label_colors = {}
 		used_color = []
